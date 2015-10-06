@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>update.png</file>
+        <file>refresh.png</file>
+        <file>close.png</file>
+        <file>ball_gray.png</file>
+        <file>ball_green.png</file>
+        <file>ball_orange.png</file>
+        <file>loading.gif</file>
+        <file>ball_red.png</file>
+        <file>systrayicon.png</file>
+    </qresource>
+</RCC>
