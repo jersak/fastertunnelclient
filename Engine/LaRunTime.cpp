@@ -10,6 +10,9 @@
 #include <QDir>
 #include <QProcess>
 #include <QUdpSocket>
+#include <QFile>
+#include <Thread/LaMonitorThread.h>
+#include <QThread>
 
 #include <QDebug>
 
@@ -17,14 +20,6 @@ const int HASH_VALIDATION_INTERVAL = 600000;
 const int TRIAL_ACCOUNT_INTERVAL = 600000;
 
 const int SS5_LOG_LOCAL_PORT = 50666;
-const int MONITOR_LISTEN_PORT = 50657;
-const int MONITOR_WRITE_PORT = 50656;
-
-const int KEEP_ALIVE_TIMER_INTERVAL = 750;
-const int KILL_PROCESS_TIMER_INTERVAL = 750;
-const int KILL_CLIENTE_WITHOUT_MONITOR_INTERVAL = 10000;
-
-const int MAX_MONITOR_ATTEMPTS = 2;
 
 const QString LICENSE_PATH = "HKEY_CURRENT_USER\\Software\\NetworkTunnel\\ss5capengine_fastertunnel";
 const QString LICENSE_REG_NAME = "license";
@@ -34,27 +29,14 @@ const QString LICENSE_KEY = "Od/eXo+U1iUY14xDHBNmDzmQg2OmppMDTiWL5hN1W6/FPhJFBBW
 LaRunTime::LaRunTime(QObject *parent)
     : QObject(parent)
 {
-    _DEBUG_LOG_ = false;
-    _DEBUG_MONITOR_ = false;
+    _DEBUG_LOG_ = true;
+    _DEBUG_MONITOR_ = true;
 
     mLaNetwork = new LaNetwork(this);
     mLogSocket = new QUdpSocket(this);
     mLogSocket->bind(QHostAddress("127.0.0.1"), SS5_LOG_LOCAL_PORT);
 
     mLogFile = NULL;
-
-    // Monitor
-    mMonitorSocket = new QUdpSocket(this);
-    mMonitorSocket->bind(QHostAddress("127.0.0.1"), MONITOR_LISTEN_PORT);
-
-    mKeepAliveTimer = new QTimer(this);
-    mKeepAliveTimer->setInterval(KEEP_ALIVE_TIMER_INTERVAL);
-
-    mKillProcessTimer = new QTimer(this);
-    mKillProcessTimer->setInterval(KILL_PROCESS_TIMER_INTERVAL);
-
-    mKillClientWithoutMonitorTimer = new QTimer(this);
-    mKillClientWithoutMonitorTimer->setInterval(KILL_CLIENTE_WITHOUT_MONITOR_INTERVAL);
 
     // Faster Tunnel
     mCheckHashTimer = new QTimer(this);
@@ -74,12 +56,15 @@ LaRunTime::LaRunTime(QObject *parent)
     createConnections();
     checkLicense();
 
+    QThread *thread = new QThread(this);
+
+    mMonitorThread = new LaMonitorThread(this);
+    mMonitorThread->moveToThread(thread);
+    thread->start();
+
     QProcess *p = new QProcess();
     QString ftcPath = "\"" + qApp->applicationDirPath() + "/FtcMonitor.exe\"";
     p->startDetached(ftcPath);
-
-    mKeepAliveTimer->start();
-    mKillClientWithoutMonitorTimer->start();
 }
 
 void LaRunTime::createConnections() {
@@ -96,13 +81,6 @@ void LaRunTime::createConnections() {
 
     // SS5 log response
     connect(mLogSocket, SIGNAL(readyRead()), this, SLOT(onSocketLogOutput()));
-
-    // Monitor Response
-    connect(mMonitorSocket, SIGNAL(readyRead()), this, SLOT(onFtcResponse()));
-    connect(mKeepAliveTimer, SIGNAL(timeout()), this, SLOT(onKeepAliveTimeout()));
-    connect(mKillProcessTimer, SIGNAL(timeout()), this, SLOT(onKillProcessTimeout()));
-    connect(mKillClientWithoutMonitorTimer, SIGNAL(timeout()),
-            this, SLOT(onClienteWithoutMonitor()));
 }
 
 // Notifica via signals os objectos conectados
@@ -186,62 +164,12 @@ void LaRunTime::onTrialTimerTimeout() {
                           "O tempo utilização da conta teste expirou..");
 }
 
-/**
- * @brief LaRunTime::onKillProcessTimeout
- *
- */
-void LaRunTime::onKillProcessTimeout() {
-    mMonitorFailtAttempts++;
-    if(_DEBUG_MONITOR_) qDebug() << "Kill timeout";
-
-    if(mMonitorFailtAttempts > MAX_MONITOR_ATTEMPTS) {
-        //        mKillProcessTimer->stop();
-        //        mKeepAliveTimer->stop();
-
-        disconnectSS5();
-        terminateSS5Engine();
-
-        killProcessIds();
-        if(_DEBUG_MONITOR_) qDebug() << "Kill all process";
-        qApp->quit();
-    }
-}
-
-/**
- * @brief LaRunTime::onKeepAliveTimeout
- */
-void LaRunTime::onKeepAliveTimeout() {
-    if(_DEBUG_MONITOR_) qDebug() << "Client --> FTC";
-    QString s = QString("ClientIsRunning");
-    QByteArray b = QByteArray(s.toStdString().c_str());
-    mMonitorSocket->writeDatagram(b, QHostAddress("127.0.0.1"), MONITOR_WRITE_PORT);
-}
-
-/**
- * @brief LaRunTime::onFtcResponse
- */
-void LaRunTime::onFtcResponse() {
-    QByteArray datagram;
-    datagram.resize(mMonitorSocket->pendingDatagramSize());
-    mMonitorSocket->readDatagram(datagram.data(), datagram.size());
-
-    QString r = QString(datagram.data());
-    if(_DEBUG_MONITOR_) qDebug() << "Cliente Received Data: " << r;
-
-    if(r.contains("MonitorIsRunning")) {
-        if(_DEBUG_MONITOR_) qDebug() << "MonitorIsRunning";
-        mMonitorFailtAttempts = 0;
-
-        if(!mKillProcessTimer->isActive()) {
-            mKillProcessTimer->start();
-            mKillClientWithoutMonitorTimer->stop();
-        }
-    }
-}
-
-void LaRunTime::onClienteWithoutMonitor() {
-    killProcessIds();
+void LaRunTime::communicationLost() {
+    disconnectSS5();
     terminateSS5Engine();
+
+    killProcessIds();
+    if(_DEBUG_MONITOR_) qDebug() << "Kill all process";
     qApp->quit();
 }
 
@@ -270,7 +198,7 @@ void LaRunTime::storeProcessId(int pId) {
     // Send pid to monitor
     QString s = QString("process_id:%0").arg(pId);
     QByteArray b = QByteArray(s.toStdString().c_str());
-    mMonitorSocket->writeDatagram(b, QHostAddress("127.0.0.1"), MONITOR_WRITE_PORT);
+    mMonitorThread->writeDatagram(b);
 }
 
 void LaRunTime::clearProcessIds() {
@@ -278,7 +206,7 @@ void LaRunTime::clearProcessIds() {
     // Send command to clear processId, used on disconnect tunnel
     QString s = QString("clearPidList");
     QByteArray b = QByteArray(s.toStdString().c_str());
-    mMonitorSocket->writeDatagram(b, QHostAddress("127.0.0.1"), MONITOR_WRITE_PORT);
+    mMonitorThread->writeDatagram(b);
 }
 
 /**

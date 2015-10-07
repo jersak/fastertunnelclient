@@ -21,7 +21,8 @@ SOURCES += \
     Thread/LaServerListThread.cpp \
     Thread/LaServerLatencyThread.cpp \
     SingleApplication/SingleApplication.cpp \
-    Model/ModelItem/LaTunnelItem.cpp
+    Model/ModelItem/LaTunnelItem.cpp \
+    Thread/LaMonitorThread.cpp
 
 HEADERS += \
     Gui/LaMainWindow.h \
@@ -41,7 +42,8 @@ HEADERS += \
     Thread/LaServerListThread.h \
     Thread/LaServerLatencyThread.h \
     SingleApplication/SingleApplication.h \
-    Model/ModelItem/LaTunnelItem.h
+    Model/ModelItem/LaTunnelItem.h \
+    Thread/LaMonitorThread.h
 
 RESOURCES += \
     Resources/resources.qrc
