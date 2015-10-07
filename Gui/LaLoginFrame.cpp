@@ -80,7 +80,7 @@ void LaLoginFrame::onLoginResponse(bool validLogin) {
         mLaRunTime->setCurrentHash(QString()); // Zera o hash local
         QMessageBox msg;
         msg.setWindowTitle(QString("Falha de autenticação."));
-        msg.setText("Usuário ou senha incorreto");
+        msg.setText("Usuário ou senha incorretos, ou a sua conta expirou.");
         msg.exec();
         return;
     }
@@ -212,13 +212,13 @@ void LaLoginFrame::saveData() {
         mLaLoginItem->setAutoLogin(mAutoLoginCheckBox->isChecked());
 
         LaDataIO::writeLoginInfo(mLaLoginItem);
-        mLaRunTime->showLogMessage("Dados de login salvos.");
+        mLaRunTime->showLogMessage("Dados de login serão lembrados.");
     } else {
         LaLoginItem *mLaLoginItem = new LaLoginItem();
         mLaLoginItem->setSaveLogin(false);
 
         LaDataIO::writeLoginInfo(mLaLoginItem);
-        mLaRunTime->showLogMessage("Dados de login excluídos.");
+        mLaRunTime->showLogMessage("Dados de login não serão lembrados.");
     }
 }
 
