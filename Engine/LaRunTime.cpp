@@ -44,6 +44,7 @@ LaRunTime::LaRunTime(QObject *parent)
     mLogFile = NULL;
 
     // Monitor
+    //TESTE DE COMMIT
     mMonitorSocket = new QUdpSocket(this);
     mMonitorSocket->bind(QHostAddress("127.0.0.1"), MONITOR_LISTEN_PORT);
 
