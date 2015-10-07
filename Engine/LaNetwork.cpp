@@ -249,6 +249,8 @@ void LaNetwork::onTunnelConfigReplay(QNetworkReply *reply) {
 void LaNetwork::onHashReply(QNetworkReply *reply) {
     QString serverHash = QString(reply->readLine());
 
+    qDebug() << "main hash" << serverHash;
+
     if(serverHash.isEmpty() || serverHash.toInt() == 0) { // Se não conseguir resposta do servidor
         qDebug() << "main hash server failed";
         requestHashOnBackupHost(); // Requisita hash do servidor backup
@@ -258,6 +260,8 @@ void LaNetwork::onHashReply(QNetworkReply *reply) {
 
 void LaNetwork::onHashBackupHostReply(QNetworkReply *reply) {
     QString serverHash = QString(reply->readLine());
+
+    qDebug() << "backup hash" << serverHash;
 
     if(serverHash.isEmpty() || serverHash.toInt() == 0) { // Se não conseguir resposta do servidor
         qDebug() << "backup hash server failed";

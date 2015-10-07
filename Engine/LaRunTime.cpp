@@ -29,8 +29,8 @@ const QString LICENSE_KEY = "Od/eXo+U1iUY14xDHBNmDzmQg2OmppMDTiWL5hN1W6/FPhJFBBW
 LaRunTime::LaRunTime(QObject *parent)
     : QObject(parent)
 {
-    _DEBUG_LOG_ = true;
-    _DEBUG_MONITOR_ = true;
+    _DEBUG_LOG_ = false;
+    _DEBUG_MONITOR_ = false;
 
     mLaNetwork = new LaNetwork(this);
     mLogSocket = new QUdpSocket(this);
@@ -140,8 +140,13 @@ void LaRunTime::showLogMessage(QString msg) {
  * @param serverHash
  */
 void LaRunTime::compareHash(QString serverHash) {
+    qDebug() << "Server Hash: " << serverHash;
+    qDebug() << "Current Hash: " << currentHash();
+
     if(serverHash != currentHash()) {
+        qDebug() << "Hash MUDOU!: " << serverHash;
         changeLoginState(false);
+        writeLog(" Desconectado. Conta usada em mais de um computador.");
         emit onShowLogMessage("Desconectado. " \
                               "Esta conta está sendo utilizada em mais de um computador.");
         emit onShowSysTrayMsg("Desconectado",
@@ -158,6 +163,8 @@ void LaRunTime::onTrialTimerTimeout() {
     terminateSS5Engine();
     killProcessIds();
 
+    writeLog(" Desconectado. Tempo do trial acabou.");
+
     emit onShowLogMessage("Desconectado. " \
                           "O tempo utilização da conta teste expirou.");
     emit onShowSysTrayMsg("Desconectado",
@@ -165,6 +172,8 @@ void LaRunTime::onTrialTimerTimeout() {
 }
 
 void LaRunTime::communicationLost() {
+
+    writeLog(" Desconectado. Não foi possivel se comunicar com o monitor.");
     disconnectSS5();
     terminateSS5Engine();
 
@@ -248,6 +257,7 @@ void LaRunTime::onNoHashResponse() {
     checkHashAtempts++;
 
     if( checkHashAtempts >= 3 ) {
+        writeLog(" Desconectado. Nao foi possivel verificar dados de autenticacao por 3 tentativas.");
         changeLoginState(false);
         onShowLogMessage("Desconectado. Não foi possível se comunicar com o " \
                          "servidor de verificação por 3 tentativas.");
@@ -326,7 +336,7 @@ void LaRunTime::SS5ConfigTunnel() {
     QString port = QString::number(LaDataIO::readServerPort());
 
     QString userB64 = QString("dXNlcjE=");
-    QString passB64 = QString("cGFzc3dvcmQ=");
+    QString passB64 = QString("aGc2NzVKS0hzZA==");
 
     if(isUsingTrialAccount()) {
         userB64 = QString("trial").toUtf8().toBase64();

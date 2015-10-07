@@ -17,8 +17,8 @@ const int MAX_MONITOR_ATTEMPTS = 2;
 LaMonitorThread::LaMonitorThread(LaRunTime * runTime, QObject *parent)
     : QObject(parent)
 {
-    _DEBUG_LOG_ = true;
-    _DEBUG_MONITOR_ = true;
+    _DEBUG_LOG_ = false;
+    _DEBUG_MONITOR_ = false;
 
     mRunTime = runTime;
 
