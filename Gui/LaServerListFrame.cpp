@@ -53,6 +53,8 @@ void LaServerListFrame::runUpdateServerThread() {
 }
 
 void LaServerListFrame::runCheckLatencyThread() {
+    mCheckLatencyButton->setEnabled(false);
+
     QThread *thread = new QThread();
 
     LaServerLatencyThread *mLaServerLatencyWork = new LaServerLatencyThread(&mServerModel, &mLatenxyTestsJson);
@@ -66,7 +68,6 @@ void LaServerListFrame::runCheckLatencyThread() {
     connect(thread, SIGNAL(started()), mLaServerLatencyWork, SLOT(process()));
     connect(thread, SIGNAL(finished()), this, SLOT(onCheckLatencyThreadFinished()));
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-//    connect(mLaServerLatencyWork, SIGNAL(latencyTestJsonCreated(QJsonObject*)), this, SLOT(onLatencyTestJsonCreated(QJsonObject*)));
     connect(mLaServerLatencyWork, SIGNAL(finished()), thread, SIGNAL(finished()));
     connect(mLaServerLatencyWork, SIGNAL(finished()), mLaServerLatencyWork, SLOT(deleteLater()));
     thread->start();
@@ -108,6 +109,7 @@ void LaServerListFrame::onUpdateServerThreadFinished() {
 }
 
 void LaServerListFrame::onCheckLatencyThreadFinished() {
+    mCheckLatencyButton->setEnabled(true);
     mLaRunTime->showStatusBarLoadMessage(false);
     mLaRunTime->showLogMessage("Latência dos servidores atualizada.");
 
