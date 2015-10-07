@@ -46,7 +46,6 @@ void LaServerLatencyThread::process() {
     mLatencyTestsJson->insert("Client_IP", "");
     mLatencyTestsJson->insert("Tests", jsonArray);
 
-//    emit latencyTestJsonCreated(finalJsonObject);
     emit showStatusBarLoadMessage(false);
     emit this->finished();
 }

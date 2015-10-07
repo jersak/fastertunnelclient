@@ -27,6 +27,9 @@ const QString SLF_KEY_SERVER_ADDR = QString("address");
 const QString SLF_KEY_VERSION = QString("version");
 const QString SLF_KEY_PORT = QString("port");
 
+const QString FILE_LATENCY = QString("lat.dat");
+const QString LAT_KEY_LAST_SENT = QString("sent_timestamp");
+
 const QString TF_GROUP_IP = QString("ip");
 const QString TF_GROUP_UDP = QString("udp");
 const QString TF_GROUP_TUNNEL = QString("tunnel");
@@ -205,6 +208,30 @@ bool LaDataIO::writeLocalServerList(QByteArray &data) {
     }
     tempFile.remove();
     return false;
+}
+
+bool LaDataIO::writeLatencyTimeStamp(qint64 lastTestTime)
+{
+    QString path = qApp->applicationDirPath() + QDir::separator() + FILE_LATENCY;
+    QSettings *settings = new QSettings(path, QSettings::IniFormat);
+
+    if(settings->status()) // [0-NoError] [1-AccessError] [2-FormatError]
+        return false;
+
+    settings->setValue(LAT_KEY_LAST_SENT, QVariant(lastTestTime));
+
+
+    return true;
+}
+
+qint64 LaDataIO::readLatencyTimeStamp()
+{
+    QString path = qApp->applicationDirPath() + QDir::separator() + FILE_LATENCY;
+    QSettings *settings = new QSettings(path, QSettings::IniFormat);
+
+    qint64 addr = settings->value(LAT_KEY_LAST_SENT, QVariant(0)).toLongLong();
+
+    return addr;
 }
 
 QList<LaServerItem*> * LaDataIO::readServerList() {

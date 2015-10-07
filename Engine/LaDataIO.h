@@ -26,6 +26,9 @@ public:
     static bool writeTunnelInfo(QByteArray &data);
     static bool writeLocalServerList(QByteArray &data);
 
+    static bool writeLatencyTimeStamp(qint64 lastTestTime);
+    static qint64 readLatencyTimeStamp();
+
 signals:
     void writeServerListFinished();
 

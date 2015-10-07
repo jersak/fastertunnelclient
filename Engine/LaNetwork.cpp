@@ -168,7 +168,6 @@ int LaNetwork::pingServer(QString address) {
     QTcpSocket *socket = new QTcpSocket();
     socket->connectToHost(address, 51234);
      if (socket->waitForConnected(1000)) {
-         qDebug("Connected!");
          socket->close();
          return t.elapsed();
      }
