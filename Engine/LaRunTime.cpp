@@ -546,12 +546,16 @@ void LaRunTime::onSocketLogOutput() {
 
                 qDebug() << "Process Name: " << processName;
 
-                emit onShowSysTrayMsg("Nova aplicação conectada",
+                if ((processName.contains("Chrome")) || (processName.contains("Plugin-container")) || (processName.contains("Iexplore")) ){
+                }else{
+                    emit onShowSysTrayMsg("Nova aplicação conectada",
                                       "A aplicação \"" + processName +
                                       "\" está conectada via FasterTunnel.");
+                }
 
                 emit onShowLogMessage("A aplicação \"" + processName +
                                       "\" está conectada via FasterTunnel.");
+
             }
         }
 
