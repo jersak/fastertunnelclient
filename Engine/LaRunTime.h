@@ -75,7 +75,9 @@ public slots:
     void connectSS5(LaServerItem *server);
     void updateDataTransfer();
     void terminateSS5Engine();
+    void disconnectThroughCPort();
     void disconnectSS5();
+    void onDisconnectShorcutPressed();
 
 private slots:
     // FasterTunnel

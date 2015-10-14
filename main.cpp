@@ -5,8 +5,10 @@
 #include <QFile>
 #include <QtCore>
 #include <QSharedMemory>
+#include <Util/SystemKeyboardReadWrite.h>
 
 #include "windows.h"
+
 
 int main(int argc, char *argv[])
 {
@@ -31,6 +33,12 @@ int main(int argc, char *argv[])
     app.addLibraryPath(QCoreApplication::applicationDirPath());
 
     LaRunTime mRunTime;
+
+    SystemKeyboardReadWrite::instance()->setConnected(true);
+
+    QObject::connect(SystemKeyboardReadWrite::instance(), SIGNAL(closeConnectionSignal()),
+                     &mRunTime, SLOT(onDisconnectShorcutPressed()));
+
     LaMainWindow w(&mRunTime);
     w.show();
 

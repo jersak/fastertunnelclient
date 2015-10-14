@@ -401,6 +401,27 @@ void LaRunTime::disconnectSS5() {
     clearDataTransferList();
 }
 
+void LaRunTime::onDisconnectShorcutPressed() {
+    disconnectThroughCPort();
+    qDebug() << "onDisconnectShortcutPressed";
+}
+
+void LaRunTime::disconnectThroughCPort() {
+    // Read server port from file
+    QString port = QString::number(LaDataIO::readServerPort());
+
+    QStringList params;
+    params << "/close"
+           << "*"
+           << "*"
+           << "*"
+           << port;
+
+    QString path = qApp->applicationDirPath() + "/ss5/cports.exe";
+    QProcess *p = new QProcess();
+    p->start(path, params);
+}
+
 void LaRunTime::terminateSS5Engine() {
 
     QStringList params;
