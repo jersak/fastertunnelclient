@@ -16,15 +16,14 @@
 
 #include <QDebug>
 
-const int HASH_VALIDATION_INTERVAL = 600000;
+const int HASH_VALIDATION_INTERVAL = 300000;
 const int TRIAL_ACCOUNT_INTERVAL = 600000;
 
 const int SS5_LOG_LOCAL_PORT = 50666;
 
 const QString LICENSE_PATH = "HKEY_CURRENT_USER\\Software\\NetworkTunnel\\ss5capengine_fastertunnel";
 const QString LICENSE_REG_NAME = "license";
-const QString LICENSE_KEY = "Od/eXo+U1iUY14xDHBNmDzmQg2OmppMDTiWL5hN1W6/FPhJFBBWdn+HH" \
-        "1aCJZV5sQIdZcYVGXdRm33CDjGD0Kl0VRp9K6652yRE7NJufOQ==";
+const QString LICENSE_KEY = "V3YuL++s9hlcNjKOiMRBWy9aFFeiNr6SsAY8JS8KDNSXKpqNHOL9QigiUjaePBl0MDjSvzcREiMroVZfeY4aZphKocCTOzXdU2dZE0SRmw==";
 
 LaRunTime::LaRunTime(QObject *parent)
     : QObject(parent)
