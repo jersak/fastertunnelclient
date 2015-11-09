@@ -12,7 +12,7 @@ const int MONITOR_WRITE_PORT = 50656;
 const int KEEP_ALIVE_TIMER_INTERVAL = 750;
 const int KILL_PROCESS_TIMER_INTERVAL = 750;
 
-const int MAX_MONITOR_ATTEMPTS = 4;
+const int MAX_MONITOR_ATTEMPTS = 5;
 
 LaMonitorThread::LaMonitorThread(LaRunTime * runTime, QObject *parent)
     : QObject(parent)

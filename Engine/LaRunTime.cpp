@@ -362,7 +362,7 @@ void LaRunTime::SS5StartTunnel() {
     showLogMessage("Iniciando tunnel...");
 
     QStringList params;
-    params << "2" << "1";
+    params << "2" << "5";
 
     QString path = qApp->applicationDirPath() + "/ss5/ss5capcmd.exe";
 
