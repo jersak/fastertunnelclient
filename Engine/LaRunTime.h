@@ -10,7 +10,6 @@
 
 class LaNetwork;
 class LaServerItem;
-class LaMonitorThread;
 class QUdpSocket;
 class QFile;
 
@@ -85,6 +84,8 @@ private slots:
     void onNoHashResponse();
     void compareHash(QString serverHash);
     void onTrialTimerTimeout();
+    void sendProccessIds();
+    void checkMonitorProcess();
 
     // SS5
     void onSocketLogOutput();
@@ -125,6 +126,11 @@ private:
     LaServerItem *mCurrentServer;
     QTimer *mCheckHashTimer;
     QTimer *mTrialAccountTimer;
+    QTimer *mMonitorCommunicationTimer;
+    QTimer *mCheckMonitorProcessTimer;
+
+    // Monitor controll vars
+    int mMonitorFailtAttempts;
 
     int checkHashAtempts;
     bool mLoginState;
@@ -135,6 +141,7 @@ private:
     // SS5Engine controll vars
     QProcess mProcessEngine;
     QUdpSocket *mLogSocket;
+    QUdpSocket *mMonitorSocket;
 
     bool mSS5EngineIsRunning;
     bool mSS5TunnelIsConnected;
@@ -142,8 +149,6 @@ private:
     // SS5 Tunnel Transfer Data
     QTimer *mDataTransferTime;
     QList<LaProcessItem*> mProcessListData;
-
-    LaMonitorThread * mMonitorThread;
 
     // Log
     QFile *mLogFile;

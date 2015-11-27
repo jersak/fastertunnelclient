@@ -22,7 +22,6 @@ SOURCES += \
     Thread/LaServerLatencyThread.cpp \
     SingleApplication/SingleApplication.cpp \
     Model/ModelItem/LaTunnelItem.cpp \
-    Thread/LaMonitorThread.cpp \
     Util/SystemKeyboardReadWrite.cpp
 
 HEADERS += \
@@ -44,7 +43,6 @@ HEADERS += \
     Thread/LaServerLatencyThread.h \
     SingleApplication/SingleApplication.h \
     Model/ModelItem/LaTunnelItem.h \
-    Thread/LaMonitorThread.h \
     Util/SystemKeyboardReadWrite.h
 
 RESOURCES += \

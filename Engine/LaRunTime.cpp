@@ -11,7 +11,6 @@
 #include <QProcess>
 #include <QUdpSocket>
 #include <QFile>
-#include <Thread/LaMonitorThread.h>
 #include <QThread>
 
 #include <QDebug>
@@ -20,6 +19,9 @@ const int HASH_VALIDATION_INTERVAL = 300000;
 const int TRIAL_ACCOUNT_INTERVAL = 600000;
 
 const int SS5_LOG_LOCAL_PORT = 50666;
+const int MONITOR_WRITE_PORT = 50656;
+
+const int MAX_MONITOR_ATTEMPTS = 2;
 
 const QString LICENSE_PATH = "HKEY_CURRENT_USER\\Software\\NetworkTunnel\\ss5capengine_fastertunnel";
 const QString LICENSE_REG_NAME = "license";
@@ -35,6 +37,8 @@ LaRunTime::LaRunTime(QObject *parent)
     mLogSocket = new QUdpSocket(this);
     mLogSocket->bind(QHostAddress("127.0.0.1"), SS5_LOG_LOCAL_PORT);
 
+    mMonitorSocket = new QUdpSocket(this);
+
     mLogFile = NULL;
 
     // Faster Tunnel
@@ -46,6 +50,14 @@ LaRunTime::LaRunTime(QObject *parent)
     mDataTransferTime = new QTimer(this);
     mDataTransferTime->setInterval(1000);
 
+    // Enviar a lista de process id para o monitor via socket
+    mMonitorCommunicationTimer = new QTimer(this);
+    mMonitorCommunicationTimer->setInterval(1000);
+
+    // Verificar na lista de processos do windows o FtcMonitor.exe
+    mCheckMonitorProcessTimer = new QTimer(this);
+    mCheckMonitorProcessTimer->setInterval(1000);
+
     checkHashAtempts = 0;
     mLoginState = false;
     mSS5EngineIsRunning = false;
@@ -55,11 +67,8 @@ LaRunTime::LaRunTime(QObject *parent)
     createConnections();
     checkLicense();
 
-    QThread *thread = new QThread(this);
-
-    mMonitorThread = new LaMonitorThread(this);
-    mMonitorThread->moveToThread(thread);
-    thread->start();
+    mMonitorCommunicationTimer->start();
+    mCheckMonitorProcessTimer->start();
 
     QProcess *p = new QProcess();
     QString ftcPath = "\"" + qApp->applicationDirPath() + "/FtcMonitor.exe\"";
@@ -77,6 +86,11 @@ void LaRunTime::createConnections() {
     connect(this, SIGNAL(SS5ReadyToStartTunnel()), this, SLOT(SS5StartTunnel()));
 
     connect(mDataTransferTime, SIGNAL(timeout()), this, SLOT(updateDataTransfer()));
+
+    // Send process ids to monitor
+    connect(mMonitorCommunicationTimer, SIGNAL(timeout()), this, SLOT(sendProccessIds()));
+
+    connect(mCheckMonitorProcessTimer, SIGNAL(timeout()), this, SLOT(checkMonitorProcess()));
 
     // SS5 log response
     connect(mLogSocket, SIGNAL(readyRead()), this, SLOT(onSocketLogOutput()));
@@ -197,24 +211,53 @@ void LaRunTime::killProcessIds() {
         if(_DEBUG_MONITOR_) qDebug() << "KillProcess: " << result;
     }
 
-    mProcessIdList.clear();
+    clearProcessIds();
 }
 
 void LaRunTime::storeProcessId(int pId) {
     mProcessIdList.insert(pId);
+}
 
-    // Send pid to monitor
-    QString s = QString("process_id:%0").arg(pId);
-    QByteArray b = QByteArray(s.toStdString().c_str());
-    mMonitorThread->writeDatagram(b);
+void LaRunTime::sendProccessIds() {
+    QString processList = QString("");
+    foreach (int pId, mProcessIdList.toList()) {
+        processList += QString::number(pId) + ",";
+    }
+
+    QByteArray b = QByteArray(processList.toStdString().c_str());
+    mMonitorSocket->writeDatagram(b, QHostAddress("127.0.0.1"), MONITOR_WRITE_PORT);
+}
+
+void LaRunTime::checkMonitorProcess()
+{
+    QProcess process;
+    process.setReadChannel(QProcess::StandardOutput);
+    process.setReadChannelMode(QProcess::MergedChannels);
+    process.start("wmic.exe process get description");
+
+    process.waitForStarted(1000);
+    process.waitForFinished(1000);
+
+    QByteArray list = process.readAll();
+    QString processList = QString(list);
+    if(processList.contains("FtcMonitor.exe")) {
+        qDebug() << "Faster Tunnel Monitor is running";
+        mMonitorFailtAttempts=0;
+    }
+    else {
+        qDebug() << "Faster Tunnel Monitor is NOT running";
+        mMonitorFailtAttempts++;
+        if(mMonitorFailtAttempts >= MAX_MONITOR_ATTEMPTS) {
+            writeLog("Desconectado. Não foi possivel encontrar o monitor.");
+            killProcessIds();
+
+            qApp->quit();
+        }
+    }
 }
 
 void LaRunTime::clearProcessIds() {
-
-    // Send command to clear processId, used on disconnect tunnel
-    QString s = QString("clearPidList");
-    QByteArray b = QByteArray(s.toStdString().c_str());
-    mMonitorThread->writeDatagram(b);
+    mProcessIdList.clear();
 }
 
 /**
