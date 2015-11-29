@@ -136,6 +136,7 @@ void LaLoginFrame::createWidgets() {
     mSaveLoginCheckBox = new QCheckBox("Salvar Usuário/Senha", this);
     mAutoLoginCheckBox = new QCheckBox("Auto Login", this);
     mTrialAccountCheckBox = new QCheckBox("Conta Teste", this);
+    mTrialAccountCheckBox->setDisabled(true);
     mLoginButton = new QPushButton("Login", this);
     mLoginButton->setFixedWidth(80);
     mLogoutButton = new QPushButton("Logout");

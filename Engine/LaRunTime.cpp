@@ -21,7 +21,8 @@ const int TRIAL_ACCOUNT_INTERVAL = 600000;
 const int SS5_LOG_LOCAL_PORT = 50666;
 const int MONITOR_WRITE_PORT = 50656;
 
-const int MAX_MONITOR_ATTEMPTS = 2;
+const int MAX_MONITOR_ATTEMPTS = 3;
+const int CHECK_MONITOR_INTERVAL = 3000;
 
 const QString LICENSE_PATH = "HKEY_CURRENT_USER\\Software\\NetworkTunnel\\ss5capengine_fastertunnel";
 const QString LICENSE_REG_NAME = "license";
@@ -56,7 +57,7 @@ LaRunTime::LaRunTime(QObject *parent)
 
     // Verificar na lista de processos do windows o FtcMonitor.exe
     mCheckMonitorProcessTimer = new QTimer(this);
-    mCheckMonitorProcessTimer->setInterval(1000);
+    mCheckMonitorProcessTimer->setInterval(CHECK_MONITOR_INTERVAL);
 
     checkHashAtempts = 0;
     mLoginState = false;
@@ -66,6 +67,8 @@ LaRunTime::LaRunTime(QObject *parent)
 
     createConnections();
     checkLicense();
+
+    mHookMode = "1";
 
     mMonitorCommunicationTimer->start();
     mCheckMonitorProcessTimer->start();
@@ -186,7 +189,7 @@ void LaRunTime::onTrialTimerTimeout() {
 
 void LaRunTime::communicationLost() {
 
-    writeLog(" Desconectado. Não foi possivel se comunicar com o monitor.");
+    writeLog("Desconectado. Não foi possivel se comunicar com o monitor.");
     disconnectSS5();
     terminateSS5Engine();
 
@@ -216,6 +219,7 @@ void LaRunTime::killProcessIds() {
 
 void LaRunTime::storeProcessId(int pId) {
     mProcessIdList.insert(pId);
+    writeProcessIds();
 }
 
 void LaRunTime::sendProccessIds() {
@@ -241,12 +245,16 @@ void LaRunTime::checkMonitorProcess()
     QByteArray list = process.readAll();
     QString processList = QString(list);
     if(processList.contains("FtcMonitor.exe")) {
-        qDebug() << "Faster Tunnel Monitor is running";
+//        qDebug() << "Faster Tunnel Monitor is running";
         mMonitorFailtAttempts=0;
     }
     else {
         qDebug() << "Faster Tunnel Monitor is NOT running";
         mMonitorFailtAttempts++;
+
+        writeLog("Failed to find monitor process ["
+                 + QString::number(mMonitorFailtAttempts) + " Attempts] - " + QString(list));
+
         if(mMonitorFailtAttempts >= MAX_MONITOR_ATTEMPTS) {
             writeLog("Desconectado. Não foi possivel encontrar o monitor.");
             killProcessIds();
@@ -258,6 +266,26 @@ void LaRunTime::checkMonitorProcess()
 
 void LaRunTime::clearProcessIds() {
     mProcessIdList.clear();
+}
+
+void LaRunTime::writeProcessIds()
+{
+    QString path = qApp->applicationDirPath() + QDir::separator();
+    QString fileName = "pids.bin";
+
+    QFile * pIdsFile = new QFile(path + fileName);
+    QDir().mkdir(path);
+    pIdsFile = new QFile(path+fileName);
+    pIdsFile->open(QFile::WriteOnly | QIODevice::Text);
+
+    QString pidsList = "";
+    foreach (int pid, mProcessIdList) {
+        pidsList += QString::number(pid) + ";";
+    }
+
+    pIdsFile->write(pidsList.toUtf8());
+    pIdsFile->flush();
+    pIdsFile->close();
 }
 
 /**
@@ -388,7 +416,8 @@ void LaRunTime::SS5ConfigTunnel() {
     QStringList params;
     params << "1"
            << "3"
-           << QString::number(DNSMode)/*"0"*/
+//           << QString::number(DNSMode)/*"0"*/
+           << "0"
            << mCurrentServer->address().toUtf8().toBase64()
            << port
            << "0"
@@ -404,15 +433,41 @@ void LaRunTime::SS5ConfigTunnel() {
 void LaRunTime::SS5StartTunnel() {
     showLogMessage("Iniciando tunnel...");
 
+    writeLog("Selected hook mode " + mHookMode);
+
     QStringList params;
-    params << "2" << "5";
+    params << "2" << mHookMode;
 
     QString path = qApp->applicationDirPath() + "/ss5/ss5capcmd.exe";
+
+    qDebug() << "Start Tunnel params: " << params;
+    writeLog("SS5StartTunnel params: 2 " + mHookMode);
 
     QProcess *p = new QProcess();
     p->start(path, params);
 
     mDataTransferTime->start(1000);
+}
+
+void LaRunTime::enableLSP(bool enable) {
+    if(enable) writeLog("LSP habilitado");
+    else writeLog("LSP desabilitado");
+
+    QString p2 = "1";
+    if(!enable) p2 = "0";
+
+    QStringList params;
+    params << "6" << p2;
+
+    QString path = qApp->applicationDirPath() + "/ss5/ss5capcmd.exe";
+
+    QProcess *p = new QProcess();
+    p->start(path, params);
+}
+
+void LaRunTime::setHookMode(QString hookMode)
+{
+    mHookMode = hookMode;
 }
 
 void LaRunTime::disconnectSS5() {
@@ -623,6 +678,5 @@ void LaRunTime::onSocketLogOutput() {
         }
 
         if(_DEBUG_LOG_) qDebug() << "Log: " << QString(datagram.data());
-
     }
 }

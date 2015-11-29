@@ -15,6 +15,7 @@
 #include <QThread>
 #include <QJsonDocument>
 #include <QDateTime>
+#include <QComboBox>
 
 LaServerListFrame::LaServerListFrame(LaRunTime *runTime, QWidget *parent) :
     QFrame(parent)
@@ -33,12 +34,23 @@ LaServerListFrame::LaServerListFrame(LaRunTime *runTime, QWidget *parent) :
     onSS5ConnectionStateChange(false);
 }
 
+void LaServerListFrame::enableViews(bool disable)
+{
+    mServerTableView->setEnabled(disable);
+    mConnectButton->setEnabled(disable);
+    mDiscconnectButton->setEnabled(disable);
+    mCheckLatencyButton->setEnabled(disable);
+    mUpdateServerButton->setEnabled(disable);
+}
+
 void LaServerListFrame::runUpdateServerThread() {
     mLaRunTime->showStatusBarLoadMessage(true, "Atualizando lista de servidores...");
 
     QThread *thread = new QThread(this);
     LaServerListThread *mLaServerListWorker = new LaServerListThread();
     mLaServerListWorker->moveToThread(thread);
+
+    connect(mHookModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onHookModeChanged(int)));
 
     connect(mLaServerListWorker, SIGNAL(showLogMessage(QString)),
             mLaRunTime, SIGNAL(onShowLogMessage(QString)));
@@ -89,12 +101,12 @@ void LaServerListFrame::onConnectServerButtonClicked() {
     int id = item->data(Qt::UserRole+1).toInt();
 
     LaServerItem *server = new LaServerItem(id, name, addr);
-    // TEMP START
-    if(mDNSLocal->isChecked())
-        mLaRunTime->DNSMode = 0;
-    else if(mDNSRemote->isChecked())
-        mLaRunTime->DNSMode = 2;
-    // TEMP END
+//    // TEMP START
+//    if(mDNSLocal->isChecked())
+//        mLaRunTime->DNSMode = 0;
+//    else if(mDNSRemote->isChecked())
+//        mLaRunTime->DNSMode = 2;
+//    // TEMP END
 
     mLaRunTime->connectSS5(server);
 }
@@ -130,6 +142,7 @@ void LaServerListFrame::onCheckLatencyThreadFinished() {
 void LaServerListFrame::onSS5ConnectionStateChange(bool connected) {
     mConnectButton->setVisible(!connected);
     mDiscconnectButton->setVisible(connected);
+    mHookModeComboBox->setDisabled(connected);
 }
 
 void LaServerListFrame::loadServersFromFile() {
@@ -157,6 +170,16 @@ void LaServerListFrame::sortColumn(int index) {
     mServerTableView->sortByColumn(index);
 }
 
+void LaServerListFrame::onHookModeChanged(int mode)
+{
+    QString modeString = mHookModeComboBox->itemData(mode).toString();
+    mLaRunTime->setHookMode(modeString);
+
+    if(mode == 0 || mode == 1) // Se Driver ou Fast mode desabilita o LSP
+        mLaRunTime->enableLSP(false);
+    else mLaRunTime->enableLSP(true); // Habilita o LSP
+}
+
 void LaServerListFrame::createLayout() {
     QVBoxLayout *l = new QVBoxLayout(this);
     l->setContentsMargins(0,0,0,0);
@@ -172,8 +195,9 @@ void LaServerListFrame::createLayout() {
 
     // TEMP START
     QHBoxLayout *tempLayout = new QHBoxLayout();
-    tempLayout->addWidget(mDNSLocal);
-    tempLayout->addWidget(mDNSRemote);
+//    tempLayout->addWidget(mDNSLocal);
+//    tempLayout->addWidget(mDNSRemote);
+    tempLayout->addWidget(mHookModeComboBox);
     tempLayout->setContentsMargins(15, 0, 15, 0);
     // TEMP END
 
@@ -200,14 +224,23 @@ void LaServerListFrame::createWidgets() {
     mDiscconnectButton->setStyleSheet(LaConnectButtonStyleSheet);
 
     // TEMP START
-    mDNSLocal = new QCheckBox("DNS Local", this);
-    mDNSRemote= new QCheckBox("DNS Remoto", this);
+//    mDNSLocal = new QCheckBox("DNS Local", this);
+//    mDNSRemote= new QCheckBox("DNS Remoto", this);
 
-    mDNSLocal->setAutoExclusive(true);
-    mDNSRemote->setAutoExclusive(true);
+//    mDNSLocal->setAutoExclusive(true);
+//    mDNSRemote->setAutoExclusive(true);
 
-    mDNSLocal->setChecked(true);
+//    mDNSLocal->setChecked(true);
     // TEMP END
+
+    /* 1 - Driver Mode
+     * 5 - Fast mode
+     * 6 - LSP Mode
+     */
+    mHookModeComboBox = new QComboBox(this);
+    mHookModeComboBox->addItem("Driver Mode", QVariant("1"));
+    mHookModeComboBox->addItem("Fast Mode", QVariant("5"));
+    mHookModeComboBox->addItem("LSP Mode", QVariant("1"));
 }
 
 void LaServerListFrame::createConnections() {

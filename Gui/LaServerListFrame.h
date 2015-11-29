@@ -12,6 +12,7 @@ class QToolButton;
 class QPushButton;
 class LaRunTime;
 class LaNetwork;
+class QComboBox;
 
 class LaServerListFrame : public QFrame
 {
@@ -22,6 +23,7 @@ public:
 signals:
 
 public slots:
+    void enableViews(bool disable);
 
 private slots:
     void runUpdateServerThread();
@@ -34,6 +36,7 @@ private slots:
     void loadServersFromFile();
     void refreshTable();
     void sortColumn(int index);
+    void onHookModeChanged(int mode);
 
 private:
     void createLayout();
@@ -49,6 +52,8 @@ private:
 
     QCheckBox *mDNSLocal;
     QCheckBox *mDNSRemote;
+
+    QComboBox *mHookModeComboBox;
 
     LaServerTableModel mServerModel;
     QJsonObject mLatenxyTestsJson;

@@ -26,7 +26,7 @@ LaMainFrame::LaMainFrame(LaRunTime *runTime, QWidget *parent) :
 
 void LaMainFrame::createWidgets() {
     mLaServerListFrame = new LaServerListFrame(mLaRunTime, this);
-    mLaServerListFrame->setDisabled(true);
+    mLaServerListFrame->enableViews(false);
     mWebView = new QWebView(this);
     mWebView->page()->mainFrame()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
     mWebView->load(QUrl("http://www.fastertunnel.com/gui_feed.html"));
@@ -48,5 +48,5 @@ void LaMainFrame::createLayout() {
 
 void LaMainFrame::createConnections() {
     connect(mLaRunTime, SIGNAL(onLoginStateChange(bool)),
-            mLaServerListFrame, SLOT(setEnabled(bool)));
+            mLaServerListFrame, SLOT(enableViews(bool)));
 }

@@ -57,6 +57,9 @@ public:
     bool SS5TunnelIsConnected() { return mSS5TunnelIsConnected; }
     bool isUsingTrialAccount() { return mUsingTrialAccount; }
 
+    void setHookMode(QString hookMode);
+    void enableLSP(bool enable);
+
     void killProcessIds();
     void communicationLost();
 
@@ -116,6 +119,8 @@ private:
     void storeProcessId(int pId);
     void clearProcessIds();
 
+    void writeProcessIds();
+
     QString magicNumber();
 
     LaNetwork *mLaNetwork;
@@ -145,6 +150,8 @@ private:
 
     bool mSS5EngineIsRunning;
     bool mSS5TunnelIsConnected;
+
+    QString mHookMode;
 
     // SS5 Tunnel Transfer Data
     QTimer *mDataTransferTime;
