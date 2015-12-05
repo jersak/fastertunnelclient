@@ -78,7 +78,7 @@ LaRunTime::LaRunTime(QObject *parent)
     QString ftcPath = "\"" + qApp->applicationDirPath() + "/FtcMonitor.exe\"";
     p->startDetached(ftcPath);
 
-    LaClientCommThread commThread;
+    LaClientCommThread *commThread = new LaClientCommThread(this);
 }
 
 void LaRunTime::createConnections() {

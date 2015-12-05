@@ -1,31 +1,30 @@
 #ifndef LACLIENTCOMMTHREAD_H
 #define LACLIENTCOMMTHREAD_H
 
+#include <QObject>
 
-#include <QTimer>
-#include <QSettings>
-#include <QApplication>
-#include <QDateTime>
-#include <QDir>
-#include <QProcess>
-#include <QUdpSocket>
-#include <QFile>
-#include <QThread>
-
+class QFile;
+class QTimer;
+class LaRunTime;
 
 class LaClientCommThread : public QObject
 {
     Q_OBJECT
-private:
-    int mMonitorFailtAttempts;
-    QTimer* CheckMonitorProcessTimer;
+
 public:
-    LaClientCommThread(QObject *parent=0);
-    void writeLog(QString log);
-    QFile *mLogFile;
-    void startConns();
+    LaClientCommThread(LaRunTime *runtime, QObject *parent=0);
+
 public slots:
-       void checkMonitorProcess();
+    void checkMonitorProcess();
+
+private:
+    void writeLog(QString log);
+
+    QFile *mLogFile;
+    int mMonitorFailtAttempts;
+    QTimer* mCheckMonitorProcessTimer;
+
+    LaRunTime *mRunTime;
 };
 
 #endif // LACLIENTCOMM_H

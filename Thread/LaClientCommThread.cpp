@@ -1,4 +1,5 @@
 #include "LaClientCommThread.h"
+
 #include <QTimer>
 #include <QSettings>
 #include <QApplication>
@@ -7,21 +8,26 @@
 #include <QProcess>
 #include <QFile>
 
+#include <Engine/LaRunTime.h>
+
+#include <QDebug>
+
 const int MAX_MONITOR_ATTEMPTS = 3;
 const int CHECK_MONITOR_INTERVAL = 5000;
 
-LaClientCommThread::LaClientCommThread(QObject *parent)
+LaClientCommThread::LaClientCommThread(LaRunTime *runTime, QObject *parent)
     : QObject(parent)
 {
+    mRunTime = runTime;
 
-    startConns();
+    mCheckMonitorProcessTimer = new QTimer(parent);
+    mCheckMonitorProcessTimer->setInterval(1000);
 
-    CheckMonitorProcessTimer->start(1000);
+    connect(mCheckMonitorProcessTimer, SIGNAL(timeout()), this, SLOT(checkMonitorProcess()));
+
+    mCheckMonitorProcessTimer->start();
+
     mLogFile = NULL;
-
-    qDebug() << "Monitor Thread is running";
-
-
 }
 
 void LaClientCommThread::writeLog(QString log) {
@@ -43,19 +49,6 @@ void LaClientCommThread::writeLog(QString log) {
     mLogFile->write(time.toUtf8() + log.toUtf8());
     mLogFile->write("\n");
     mLogFile->flush();
-}
-
-void LaClientCommThread::startConns()
-{
-    CheckMonitorProcessTimer = new QTimer(this);
-    CheckMonitorProcessTimer->setInterval(1000);
-
-    if( QObject::connect(CheckMonitorProcessTimer, SIGNAL(timeout()), this, SLOT(checkMonitorProcess()))){
-        qDebug() << "Conectou";
-    } else {
-        qDebug() << "Nao Conectou";
-    }
-
 }
 
 void LaClientCommThread::checkMonitorProcess()
@@ -84,7 +77,7 @@ void LaClientCommThread::checkMonitorProcess()
 
         if(mMonitorFailtAttempts >= MAX_MONITOR_ATTEMPTS) {
             writeLog("Desconectado. Não foi possivel encontrar o monitor.");
-            //killProcessIds();
+            mRunTime->killProcessIds();
 
             qApp->quit();
         }
