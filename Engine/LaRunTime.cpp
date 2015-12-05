@@ -1,6 +1,7 @@
 #include "LaRunTime.h"
 #include "LaNetwork.h"
 #include "LaDataIO.h"
+#include "Thread/LaClientCommThread.h"
 
 #include <Model/ModelItem/LaServerItem.h>
 #include <QTimer>
@@ -22,7 +23,7 @@ const int SS5_LOG_LOCAL_PORT = 50666;
 const int MONITOR_WRITE_PORT = 50656;
 
 const int MAX_MONITOR_ATTEMPTS = 3;
-const int CHECK_MONITOR_INTERVAL = 3000;
+const int CHECK_MONITOR_INTERVAL = 5000;
 
 const QString LICENSE_PATH = "HKEY_CURRENT_USER\\Software\\NetworkTunnel\\ss5capengine_fastertunnel";
 const QString LICENSE_REG_NAME = "license";
@@ -31,8 +32,8 @@ const QString LICENSE_KEY = "V3YuL++s9hlcNjKOiMRBWy9aFFeiNr6SsAY8JS8KDNSXKpqNHOL
 LaRunTime::LaRunTime(QObject *parent)
     : QObject(parent)
 {
-    _DEBUG_LOG_ = false;
-    _DEBUG_MONITOR_ = false;
+    _DEBUG_LOG_ = true;
+    _DEBUG_MONITOR_ = true;
 
     mLaNetwork = new LaNetwork(this);
     mLogSocket = new QUdpSocket(this);
@@ -71,11 +72,13 @@ LaRunTime::LaRunTime(QObject *parent)
     mHookMode = "1";
 
     mMonitorCommunicationTimer->start();
-    mCheckMonitorProcessTimer->start();
+    //mCheckMonitorProcessTimer->start();
 
     QProcess *p = new QProcess();
     QString ftcPath = "\"" + qApp->applicationDirPath() + "/FtcMonitor.exe\"";
     p->startDetached(ftcPath);
+
+    LaClientCommThread commThread;
 }
 
 void LaRunTime::createConnections() {
@@ -239,13 +242,13 @@ void LaRunTime::checkMonitorProcess()
     process.setReadChannelMode(QProcess::MergedChannels);
     process.start("wmic.exe process get description");
 
-    process.waitForStarted(1000);
-    process.waitForFinished(1000);
+    //process.waitForStarted();
+    process.waitForFinished(5);
 
     QByteArray list = process.readAll();
     QString processList = QString(list);
     if(processList.contains("FtcMonitor.exe")) {
-//        qDebug() << "Faster Tunnel Monitor is running";
+        qDebug() << "Faster Tunnel Monitor is running";
         mMonitorFailtAttempts=0;
     }
     else {
