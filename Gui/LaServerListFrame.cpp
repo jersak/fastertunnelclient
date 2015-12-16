@@ -241,6 +241,11 @@ void LaServerListFrame::createWidgets() {
     mHookModeComboBox->addItem("Driver Mode", QVariant("1"));
     mHookModeComboBox->addItem("Fast Mode", QVariant("5"));
     mHookModeComboBox->addItem("LSP Mode", QVariant("1"));
+
+    mHookModeComboBox->setToolTip("Maneira como o cliente se acopla ao jogo.\n \
+A maioria dos jogos deve funcionar como Driver Mode, porém pode ser necessário\n \
+alterar o modo de acoplamento caso seu jogo não esteja sendo detectado.");
+
 }
 
 void LaServerListFrame::createConnections() {

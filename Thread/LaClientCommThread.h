@@ -2,6 +2,7 @@
 #define LACLIENTCOMMTHREAD_H
 
 #include <QObject>
+#include <QSharedMemory>
 
 class QFile;
 class QTimer;
@@ -23,6 +24,7 @@ private:
     QFile *mLogFile;
     int mMonitorFailtAttempts;
     QTimer* mCheckMonitorProcessTimer;
+    QSharedMemory monitorsignature;
 
     LaRunTime *mRunTime;
 };

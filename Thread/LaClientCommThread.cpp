@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QFile>
+#include <QSharedMemory>
 
 #include <Engine/LaRunTime.h>
 
@@ -25,7 +26,7 @@ LaClientCommThread::LaClientCommThread(LaRunTime *runTime, QObject *parent)
 
     connect(mCheckMonitorProcessTimer, SIGNAL(timeout()), this, SLOT(checkMonitorProcess()));
 
-    mCheckMonitorProcessTimer->start();
+    mCheckMonitorProcessTimer->start(10000);
 
     mLogFile = NULL;
 }
@@ -54,6 +55,19 @@ void LaClientCommThread::writeLog(QString log) {
 void LaClientCommThread::checkMonitorProcess()
 {
     qDebug() << "Entrei no coiso";
+
+    QSharedMemory monitorsignature("61BB201D-3569-453e-9144-");
+    if(monitorsignature.create(512,QSharedMemory::ReadWrite)==true) {
+        qDebug() << "Desconectado. Não foi possivel encontrar o monitor.";
+        writeLog("Desconectado. Não foi possivel encontrar o monitor.");
+        mRunTime->killProcessIds();
+
+        qApp->quit();
+    } else {
+        qDebug() << "Monitor está rodando.";
+    }
+
+/*
     QProcess process;
     process.setReadChannel(QProcess::StandardOutput);
     process.setReadChannelMode(QProcess::MergedChannels);
@@ -81,6 +95,6 @@ void LaClientCommThread::checkMonitorProcess()
 
             qApp->quit();
         }
-    }
+    } */
 }
 

@@ -72,13 +72,20 @@ LaRunTime::LaRunTime(QObject *parent)
     mHookMode = "1";
 
     mMonitorCommunicationTimer->start();
-    //mCheckMonitorProcessTimer->start();
 
     QProcess *p = new QProcess();
     QString ftcPath = "\"" + qApp->applicationDirPath() + "/FtcMonitor.exe\"";
     p->startDetached(ftcPath);
 
-    LaClientCommThread *commThread = new LaClientCommThread(this);
+    mCheckMonitorProcessTimer->start(10000);
+
+    //LaClientCommThread *commThread = new LaClientCommThread(this);
+
+    //QThread *thread = new QThread(this);
+
+    //commThread->moveToThread(thread);
+
+    //thread->start();
 }
 
 void LaRunTime::createConnections() {
@@ -237,6 +244,21 @@ void LaRunTime::sendProccessIds() {
 
 void LaRunTime::checkMonitorProcess()
 {
+
+    qDebug() << "Entrei no coiso";
+
+    QSharedMemory monitorsignature("61BB201D-3569-453e-9144-");
+    if(monitorsignature.create(512,QSharedMemory::ReadWrite)==true) {
+        qDebug() << "Desconectado. Não foi possivel encontrar o monitor.";
+        writeLog("Desconectado. Não foi possivel encontrar o monitor.");
+        killProcessIds();
+
+        qApp->quit();
+    } else {
+        qDebug() << "Monitor está rodando.";
+    }
+
+    /*
     QProcess process;
     process.setReadChannel(QProcess::StandardOutput);
     process.setReadChannelMode(QProcess::MergedChannels);
@@ -264,7 +286,7 @@ void LaRunTime::checkMonitorProcess()
 
             qApp->quit();
         }
-    }
+    }*/
 }
 
 void LaRunTime::clearProcessIds() {

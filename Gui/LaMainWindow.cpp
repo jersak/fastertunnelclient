@@ -36,6 +36,10 @@ LaMainWindow::LaMainWindow(LaRunTime *runTime, QWidget *parent) :
 
     setStyleSheet(LaMainWindowStyleSheet);
     setObjectName("GlossyFrame");
+
+    QMessageBox msgBoxAviso;
+    msgBoxAviso.setText("AVISO: Este programa deve ser executado como administrador!\n(Se você executou como administrador, desconsidere esta mensagem.)");
+    msgBoxAviso.exec();
 }
 
 void LaMainWindow::showStatusBarLoadMessage(bool show, QString msg) {
