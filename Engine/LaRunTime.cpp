@@ -23,7 +23,7 @@ const int SS5_LOG_LOCAL_PORT = 50666;
 const int MONITOR_WRITE_PORT = 50656;
 
 const int MAX_MONITOR_ATTEMPTS = 3;
-const int CHECK_MONITOR_INTERVAL = 5000;
+const int CHECK_MONITOR_INTERVAL = 3000;
 
 const QString LICENSE_PATH = "HKEY_CURRENT_USER\\Software\\NetworkTunnel\\ss5capengine_fastertunnel";
 const QString LICENSE_REG_NAME = "license";
@@ -77,6 +77,7 @@ LaRunTime::LaRunTime(QObject *parent)
     QString ftcPath = "\"" + qApp->applicationDirPath() + "/FtcMonitor.exe\"";
     p->startDetached(ftcPath);
 
+    mCheckMonitorProcessTimer->setSingleShot(true);
     mCheckMonitorProcessTimer->start(10000);
 
     //LaClientCommThread *commThread = new LaClientCommThread(this);
@@ -247,8 +248,12 @@ void LaRunTime::checkMonitorProcess()
 
     qDebug() << "Entrei no coiso";
 
-    QSharedMemory monitorsignature("61BB201D-3569-453e-9144-");
-    if(monitorsignature.create(512,QSharedMemory::ReadWrite)==true) {
+    QSharedMemory monitorsignature;
+    monitorsignature.setKey("1234");
+
+    qDebug() << "Criei o objeto de memoria e setei a key";
+
+    if(monitorsignature.create(512,QSharedMemory::ReadWrite)) {
         qDebug() << "Desconectado. Não foi possivel encontrar o monitor.";
         writeLog("Desconectado. Não foi possivel encontrar o monitor.");
         killProcessIds();
@@ -256,6 +261,12 @@ void LaRunTime::checkMonitorProcess()
         qApp->quit();
     } else {
         qDebug() << "Monitor está rodando.";
+    }
+
+    if(mCheckMonitorProcessTimer->isSingleShot()){
+        mCheckMonitorProcessTimer->setSingleShot(false);
+        mCheckMonitorProcessTimer->setInterval(CHECK_MONITOR_INTERVAL);
+        mCheckMonitorProcessTimer->start();
     }
 
     /*
