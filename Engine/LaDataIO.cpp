@@ -155,6 +155,9 @@ bool LaDataIO::writeLocalServerList(QByteArray &data) {
         QString path = QString(qApp->applicationDirPath() + "/serverList.dat");
 
         QFile serverListFile(path);
+        if (serverListFile.exists()){
+            serverListFile.remove();
+        }
         serverListFile.open(QIODevice::ReadWrite);
         serverListFile.write(data);
         serverListFile.close();
