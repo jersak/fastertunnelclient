@@ -126,15 +126,15 @@ void LaServerListFrame::onCheckLatencyThreadFinished() {
     mLaRunTime->showStatusBarLoadMessage(false);
     mLaRunTime->showLogMessage("Latência dos servidores atualizada.");
 
-    qint64 lastTimeStamp = LaDataIO::readLatencyTimeStamp();
-    qint64 currentTimeStamp = QDateTime::currentMSecsSinceEpoch();
+//    qint64 lastTimeStamp = LaDataIO::readLatencyTimeStamp();
+//    qint64 currentTimeStamp = QDateTime::currentMSecsSinceEpoch();
 
     // Se time stamp do ultimo envio de testes for 0(nunca ter sido feito) ou feito a mais de meia hora
     // envia os resultados para o WS
-    if(lastTimeStamp == 0 || ((currentTimeStamp - lastTimeStamp) > 1800000)) {
-        sendTests();
-        LaDataIO::writeLatencyTimeStamp(currentTimeStamp);
-    }
+//    if(lastTimeStamp == 0 || ((currentTimeStamp - lastTimeStamp) > 1800000)) {
+//        sendTests();
+//        LaDataIO::writeLatencyTimeStamp(currentTimeStamp);
+//    }
 
     refreshTable();
 }
