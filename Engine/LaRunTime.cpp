@@ -367,7 +367,7 @@ QString LaRunTime::checkHwId() {
        return qstr;
     } else {
        qDebug() << "Could not get volume serial";
-       return 0;
+       return NULL;
     }
 
 }

@@ -15,7 +15,7 @@ class LaNetwork : public QObject
 public:
     LaNetwork(QObject *parent);
 
-    void tryLogin(QString username, QString password, QString hash);
+    void tryLogin(QString username, QString password, QString hash, QString hwid);
     void requestServerList();
     void requestTunnelConfig();
     void requestHash(QString currentUser);

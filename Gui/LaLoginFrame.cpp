@@ -37,11 +37,11 @@ LaLoginFrame::LaLoginFrame(LaRunTime *runTime, QWidget *parent) :
 
 void LaLoginFrame::onLoginButtonClicked() {
     // Logar com contra trial
-    if( mTrialAccountCheckBox->isChecked() ) {
-        mLaRunTime->setUsingTrialAccount(true);
-        onLoginResponse(true);
-        return;
-    }
+//    if( mTrialAccountCheckBox->isChecked() ) {
+//        mLaRunTime->setUsingTrialAccount(true);
+//        onLoginResponse(true);
+//        return;
+//    }
 
     mLaRunTime->setUsingTrialAccount(false);
 
@@ -64,7 +64,13 @@ void LaLoginFrame::onLoginButtonClicked() {
     // Armazena o has local para futuras comparações
     mLaRunTime->setCurrentHash(hash);
 
-    mLaNetwork->tryLogin(username,password,hash);
+    QString hwid = NULL;
+
+    if (mTrialAccountCheckBox->isChecked()){
+        hwid = mLaRunTime->checkHwId();
+    }
+
+    mLaNetwork->tryLogin(username,password,hash,hwid);
 }
 
 void LaLoginFrame::onLogoutButtonClicked() {
@@ -80,7 +86,7 @@ void LaLoginFrame::onLoginResponse(bool validLogin) {
         mLaRunTime->setCurrentHash(QString()); // Zera o hash local
         QMessageBox msg;
         msg.setWindowTitle(QString("Falha de autenticação."));
-        msg.setText("Usuário ou senha incorretos, ou a sua conta expirou.");
+        msg.setText("Usuário ou senha incorretos, ou a sua conta ou teste expirou.");
         msg.exec();
         return;
     }
@@ -136,7 +142,7 @@ void LaLoginFrame::createWidgets() {
     mSaveLoginCheckBox = new QCheckBox("Salvar Usuário/Senha", this);
     mAutoLoginCheckBox = new QCheckBox("Auto Login", this);
     mTrialAccountCheckBox = new QCheckBox("Conta Teste", this);
-    mTrialAccountCheckBox->setDisabled(true);
+    mTrialAccountCheckBox->setDisabled(false);
     mLoginButton = new QPushButton("Login", this);
     mLoginButton->setFixedWidth(80);
     mLogoutButton = new QPushButton("Logout");

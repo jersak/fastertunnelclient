@@ -62,6 +62,7 @@ public:
 
     void killProcessIds();
     void communicationLost();
+    QString checkHwId();
 
 signals:
     void SS5ReadyToConfig();
@@ -103,7 +104,6 @@ private:
 
     // FasterTunnel
     void checkLicense();
-    void checkHwId();
 
     // Data Transfer
     void updateDataTransferList(long pId, double sentData, double receivedData);

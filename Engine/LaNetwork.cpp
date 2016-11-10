@@ -32,14 +32,20 @@ LaNetwork::LaNetwork(QObject *parent)
 }
 
 // Envia post request para o login
-void LaNetwork:: tryLogin(QString username, QString password, QString hash) {
+void LaNetwork:: tryLogin(QString username, QString password, QString hash, QString hwid) {
     QNetworkAccessManager *nwam = new QNetworkAccessManager;
     connect(nwam, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(onLoginReply(QNetworkReply*)));
 
     qDebug() << "root: " << LaDataIO::readRootAddr();
 
-    QUrl url = QUrl(ADDR_PREFIX + LaDataIO::readRootAddr() + LOGIN_ADDR_SUFIX );
+    QString sufix = LOGIN_ADDR_SUFIX;
+
+    if (hwid != NULL){
+        sufix = TRIAL_ACCOUNT_ADDR_SUFIX;
+    }
+
+    QUrl url = QUrl(ADDR_PREFIX + LaDataIO::readRootAddr() + sufix );
 
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader,
@@ -56,6 +62,10 @@ void LaNetwork:: tryLogin(QString username, QString password, QString hash) {
     params.addQueryItem("login", username);
     params.addQueryItem("password", password);
     params.addQueryItem("hash", hash);
+
+    if (hwid != NULL){
+        params.addQueryItem("hwid", hwid);
+    }
 
     data.append(params.toString(QUrl::FullyEncoded));
 
