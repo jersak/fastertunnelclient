@@ -103,6 +103,7 @@ private:
 
     // FasterTunnel
     void checkLicense();
+    void checkHwId();
 
     // Data Transfer
     void updateDataTransferList(long pId, double sentData, double receivedData);

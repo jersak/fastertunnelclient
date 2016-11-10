@@ -3,6 +3,9 @@
 #include "LaDataIO.h"
 #include "Thread/LaClientCommThread.h"
 
+#include <windows.h>
+#include <stdio.h>
+
 #include <Model/ModelItem/LaServerItem.h>
 #include <QTimer>
 #include <QSettings>
@@ -16,6 +19,9 @@
 
 #include <QDebug>
 
+DWORD dwVolSerial;
+BOOL bIsRetrieved;
+
 const int HASH_VALIDATION_INTERVAL = 300000;
 const int TRIAL_ACCOUNT_INTERVAL = 600000;
 
@@ -28,6 +34,9 @@ const int CHECK_MONITOR_INTERVAL = 3000;
 const QString LICENSE_PATH = "HKEY_CURRENT_USER\\Software\\NetworkTunnel\\ss5capengine_fastertunnel";
 const QString LICENSE_REG_NAME = "license";
 const QString LICENSE_KEY = "D4G9Pa3u1gReN641X3bxGfIDLoQsD1l4pzUoq23LsO7zdCaUgPfLqhNmbJ9T8X73HqqdpPJ9YBE0qXqvCQZA9hFsplkboL0DOScuR7XYnw==";
+
+const QString HWID_PATH = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Cryptography";
+const QString HWID_REG_NAME = "MachineGuid";
 
 LaRunTime::LaRunTime(QObject *parent)
     : QObject(parent)
@@ -68,6 +77,7 @@ LaRunTime::LaRunTime(QObject *parent)
 
     createConnections();
     checkLicense();
+    checkHwId();
 
     mHookMode = "1";
 
@@ -341,6 +351,25 @@ void LaRunTime::checkLicense() {
     // Se não existe key instalada cria o registro, ou se não é a key atual, atualiza
     if( installedLicense.isEmpty() || differentKey )
         settings->setValue(LICENSE_REG_NAME, QVariant(LICENSE_KEY));
+
+    qDebug() << "License: " << installedLicense;
+}
+
+QString LaRunTime::checkHwId() {
+
+    bIsRetrieved = GetVolumeInformation(TEXT("C:\\"), NULL, NULL, &dwVolSerial, NULL, NULL, NULL, NULL);
+
+    QString qstr;
+
+    if (bIsRetrieved) {
+       qstr = QString::number(dwVolSerial,16).toUpper();
+       qDebug() << "HWID: " << qstr;
+       return qstr;
+    } else {
+       qDebug() << "Could not get volume serial";
+       return 0;
+    }
+
 }
 
 void LaRunTime::setSS5TunnelConnected(bool connected) {

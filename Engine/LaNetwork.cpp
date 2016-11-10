@@ -21,6 +21,7 @@ const QString ADDR_PREFIX = "http://";
 const QString HASH_ADDR_SUFIX = "/hash.php";
 const QString LOGIN_ADDR_SUFIX = "/gui_auth.php";
 const QString ACCOUNT_EXPIRATION_ADDR_SUFIX = "/expira.php";
+const QString TRIAL_ACCOUNT_ADDR_SUFIX = "/trial.php";
 const QString CLIENT_SERVER_LIST_ADDR_SUFIX = "/conf/serverlist.ini";
 const QString TUNNEL_FILE_ADDR_SUFIX = "/conf/tunnel.ini";
 const QString LATENCY_TEST_WS_ADDR = "http://www.fastertunnel.com/parse/create_reading.php";//"http://ft.leftapps.com/parse/create_reading.php";
