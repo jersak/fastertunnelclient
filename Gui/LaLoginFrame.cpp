@@ -45,6 +45,10 @@ void LaLoginFrame::onLoginButtonClicked() {
 
     mLaRunTime->setUsingTrialAccount(false);
 
+    if( mTrialAccountCheckBox->isChecked() ) {
+         mLaRunTime->setUsingTrialAccount(true);
+    }
+
     mLaRunTime->showStatusBarLoadMessage(true, "Autenticando.");
     mLaNetwork = new LaNetwork(this);
 
@@ -98,10 +102,13 @@ void LaLoginFrame::onLoginResponse(bool validLogin) {
         mLaRunTime->setCurrentUser(mLoginLineEdit->text());
         mLaRunTime->showLogMessage("Login efetuado com sucesso.");
         mLaNetwork->requestAccountExpirationDate(mLoginLineEdit->text());
-    } else mLaRunTime->showLogMessage("Login efetuado com sucesso [TrialAccount].");
+    } else {
+        mLaRunTime->setCurrentUser(mLoginLineEdit->text());
+        mLaRunTime->showLogMessage("Login efetuado com sucesso [TrialAccount].");
+    }
 
     mLaRunTime->changeLoginState(validLogin);
-    if(!mLaRunTime->isUsingTrialAccount())
+    //if(!mLaRunTime->isUsingTrialAccount())
         saveData();
 }
 
@@ -240,7 +247,7 @@ void LaLoginFrame::updateLoginUi(bool logged) {
     mLoggedUserLabel->setVisible(logged);
 
     if(mLaRunTime->isUsingTrialAccount())
-        mLoggedUserLabel->setText("Trial Account");
+        mLoggedUserLabel->setText(mLaRunTime->currentUser() + " (Trial)");
     else {
         mLoggedUserLabel->setText(mLaRunTime->currentUser());
         mExpirationDateLabel->setVisible(logged);

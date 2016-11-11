@@ -384,8 +384,8 @@ QString LaRunTime::magicNumber() {
 }
 
 void LaRunTime::onHashTimer() {
-    if(!isUsingTrialAccount())
-        mLaNetwork->requestHash(currentUser());
+    //if(!isUsingTrialAccount())
+    mLaNetwork->requestHash(currentUser());
 }
 
 void LaRunTime::onNoHashResponse() {
@@ -411,12 +411,12 @@ void LaRunTime::onNoHashResponse() {
 void LaRunTime::connectSS5(LaServerItem *server) {
     mCurrentServer = server;
 
-    if(isUsingTrialAccount()) {
-        mTrialAccountTimer->singleShot(TRIAL_ACCOUNT_INTERVAL, this, SLOT(onTrialTimerTimeout()));
-        mCheckHashTimer->stop();
-    } else if(mTrialAccountTimer->isActive()) {
-        mTrialAccountTimer->stop();
-    }
+//    if(isUsingTrialAccount()) {
+//        mTrialAccountTimer->singleShot(TRIAL_ACCOUNT_INTERVAL, this, SLOT(onTrialTimerTimeout()));
+//        mCheckHashTimer->stop();
+//    } else if(mTrialAccountTimer->isActive()) {
+//        mTrialAccountTimer->stop();
+//    }
 
     // Se a engine não estiver rodando, inicia a engine;
     if( !SS5EngineIsRunning() ) {
@@ -475,7 +475,7 @@ void LaRunTime::SS5ConfigTunnel() {
 
     if(isUsingTrialAccount()) {
         userB64 = QString("trial").toUtf8().toBase64();
-        passB64 = QString("trial").toUtf8().toBase64();
+        passB64 = QString("kjlh376JHjhOLD").toUtf8().toBase64();
     }
 
     QStringList params;
