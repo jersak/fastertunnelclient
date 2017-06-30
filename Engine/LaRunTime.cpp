@@ -33,7 +33,7 @@ const int CHECK_MONITOR_INTERVAL = 3000;
 
 const QString LICENSE_PATH = "HKEY_CURRENT_USER\\Software\\NetworkTunnel\\ss5capengine_fastertunnel";
 const QString LICENSE_REG_NAME = "license";
-const QString LICENSE_KEY = "D4G9Pa3u1gReN641X3bxGfIDLoQsD1l4pzUoq23LsO7zdCaUgPfLqhNmbJ9T8X73HqqdpPJ9YBE0qXqvCQZA9hFsplkboL0DOScuR7XYnw==";
+const QString LICENSE_KEY = "V3YuL++s9hlcNjKOiMRBWy9aFFeiNr6SsAY8JS8KDNSXKpqNHOL9QigiUjaePBl0MDjSvzcREiMroVZfeY4aZphKocCTOzXdU2dZE0SRmw==";
 
 const QString HWID_PATH = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Cryptography";
 const QString HWID_REG_NAME = "MachineGuid";
@@ -556,9 +556,9 @@ void LaRunTime::disconnectSS5() {
     writeLog( QString("Sent: " + QString::number(pItem->totalSent) + "kb" +
                       "| Received: " + QString::number(pItem->totalReceived) + "kb"));
 
-    killProcessIds();
+    //killProcessIds();
 
-    clearProcessIds(); // Send command to monitor
+    //clearProcessIds(); // Send command to monitor
     mDataTransferTime->stop(); // stop data transfer timer
     clearDataTransferList();
 }
